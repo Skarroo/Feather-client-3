@@ -1,0 +1,26 @@
+name: Build Feather HUD Mod
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Set up Java 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+      - name: Grant execute permission to gradlew
+        run: chmod +x gradlew
+      - name: Build with Gradle
+        run: ./gradlew build
+      - name: Upload mod JAR
+        uses: actions/upload-artifact@v4
+        with:
+          name: feather-hud-mod
+          path: build/libs/feather-hud-*.jar
+          retention-days: 30
