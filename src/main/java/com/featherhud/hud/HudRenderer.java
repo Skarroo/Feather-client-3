@@ -27,6 +27,18 @@ public class HudRenderer {
         modules.add(new PotionEffectsModule());
         modules.add(new TargetHealthModule());
         modules.add(new HeldItemModule());
+        modules.add(new FoodDisplayModule());
+        modules.add(new XPDisplayModule());
+        modules.add(new HealthDisplayModule());
+        modules.add(new ServerIPModule());
+        modules.add(new EntityCounterModule());
+        modules.add(new ArrowCountModule());
+        modules.add(new TotemCountModule());
+        modules.add(new PearlCountModule());
+        modules.add(new FullBrightModule());
+        modules.add(new ZoomModule());
+        modules.add(new NoHurtCamModule());
+        modules.add(new NoFogModule());
     }
     public void render(DrawContext context, RenderTickCounter tickCounter) {
         MinecraftClient client = MinecraftClient.getInstance();

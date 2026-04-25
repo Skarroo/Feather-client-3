@@ -3,17 +3,15 @@
   "id": "featherhud",
   "version": "${version}",
   "name": "Feather HUD",
-  "description": "A comprehensive HUD mod with 17 modules inspired by Feather Client. Drag to reposition, right-click to toggle. Press H to open config.",
+  "description": "Professional HUD mod with 30+ modules inspired by Feather Client.",
   "authors": ["FeatherHUD"],
   "contact": {},
   "license": "MIT",
-  "icon": "assets/featherhud/icon.png",
   "environment": "client",
   "entrypoints": {
-    "client": [
-      "com.featherhud.FeatherHudClient"
-    ]
+    "client": ["com.featherhud.FeatherHudClient"]
   },
+  "mixins": ["featherhud.mixins.json"],
   "depends": {
     "fabricloader": ">=0.15.0",
     "fabric-api": "*",
