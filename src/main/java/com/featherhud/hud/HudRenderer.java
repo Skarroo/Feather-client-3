@@ -10,6 +10,7 @@ public class HudRenderer {
         modules.add(new FpsModule());
         modules.add(new CoordsModule());
         modules.add(new ChunkModule());
+        modules.add(new DirectionModule());
         modules.add(new BiomeModule());
         modules.add(new PingModule());
         modules.add(new MemoryModule());
@@ -30,6 +31,7 @@ public class HudRenderer {
         modules.add(new FoodDisplayModule());
         modules.add(new XPDisplayModule());
         modules.add(new HealthDisplayModule());
+        modules.add(new SaturationModule());
         modules.add(new ServerIPModule());
         modules.add(new EntityCounterModule());
         modules.add(new ArrowCountModule());
@@ -39,6 +41,14 @@ public class HudRenderer {
         modules.add(new ZoomModule());
         modules.add(new NoHurtCamModule());
         modules.add(new NoFogModule());
+        modules.add(new PlaytimeModule());
+        modules.add(new StopwatchModule());
+        modules.add(new ComboDisplayModule());
+        modules.add(new AttackIndicatorModule());
+        modules.add(new DeathCounterModule());
+        modules.add(new FOVChangerModule());
+        modules.add(new ItemCounterModule());
+        modules.add(new BlockAboveModule());
     }
     public void render(DrawContext context, RenderTickCounter tickCounter) {
         MinecraftClient client = MinecraftClient.getInstance();
