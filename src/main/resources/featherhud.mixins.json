@@ -3,10 +3,7 @@
   "minVersion": "0.8",
   "package": "com.featherhud.mixin",
   "compatibilityLevel": "JAVA_21",
-  "client": [
-    "GameRendererMixin",
-    "BackgroundRendererMixin"
-  ],
+  "client": [],
   "injectors": {
     "defaultRequire": 1
   }
