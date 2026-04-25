@@ -1,218 +1,86 @@
 package com.featherhud.gui;
-
 import com.featherhud.FeatherHudClient;
 import com.featherhud.config.ConfigManager;
-import com.featherhud.config.HudModuleConfig;
 import com.featherhud.hud.HudModule;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.ButtonWidget;
+import net.minecraft.client.gui.widget.TextFieldWidget;
 import net.minecraft.text.Text;
-
 import java.util.List;
-
+import java.util.stream.Collectors;
 public class HudConfigScreen extends Screen {
-
     private final Screen parent;
     private final List<HudModule> modules;
-
-    private HudModule dragging = null;
-    private int dragOffsetX, dragOffsetY;
-
-    // Right-click popup state
-    private HudModule popupModule = null;
-    private int popupX, popupY;
-
-    private static final int TITLE_BAR = 20;
-
-    public HudConfigScreen(Screen parent) {
-        super(Text.literal("Feather HUD Config  •  Drag to move  •  Right-click to toggle"));
-        this.parent = parent;
-        this.modules = FeatherHudClient.hudRenderer.getModules();
+    private int panelX,panelY;
+    private static final int PW=720,PH=460,HH=44,TH=30,FH=36,CW=156,CH=90,CG=8,PAD=12;
+    private static final int CBG=0xFF141414,CHD=0xFF0C0C0C,CAC=0xFFE53935,CCD=0xFF1E1E1E,CCH=0xFF2A2A2A,CEN=0xFF00C853,CDI=0xFF424242,CTX=0xFFEEEEEE,CMT=0xFF888888,CBR=0xFF2E2E2E,CTS=0xFF2A2A2A;
+    private static final String[] TABS={"All","HUD","Visual","PvP"};
+    private String activeTab="All",search="";
+    private int scrollY=0;
+    private TextFieldWidget searchBox;
+    public HudConfigScreen(Screen parent){super(Text.literal("Feather HUD"));this.parent=parent;this.modules=FeatherHudClient.hudRenderer.getModules();}
+    @Override protected void init(){
+        panelX=(width-PW)/2;panelY=(height-PH)/2;
+        searchBox=new TextFieldWidget(textRenderer,panelX+PW-168,panelY+12,155,20,Text.empty());
+        searchBox.setMaxLength(30);searchBox.setSuggestion("Search...");searchBox.setChangedListener(t->{search=t.toLowerCase();scrollY=0;});
+        addDrawableChild(searchBox);
+        addDrawableChild(ButtonWidget.builder(Text.literal("Edit Positions"),btn->client.setScreen(new HudPositionScreen(this))).dimensions(panelX+10,panelY+PH-FH+8,120,20).build());
+        addDrawableChild(ButtonWidget.builder(Text.literal("Reset All"),btn->{modules.forEach(m->m.getConfig().resetToDefault());ConfigManager.save();}).dimensions(panelX+138,panelY+PH-FH+8,80,20).build());
+        addDrawableChild(ButtonWidget.builder(Text.literal("Done"),btn->close()).dimensions(panelX+PW-78,panelY+PH-FH+8,68,20).build());
     }
-
-    @Override
-    protected void init() {
-        // Done button
-        addDrawableChild(ButtonWidget.builder(Text.literal("Done"), btn -> close())
-                .dimensions(width / 2 - 50, height - 28, 100, 20)
-                .build());
-
-        // Reset All button
-        addDrawableChild(ButtonWidget.builder(Text.literal("Reset Positions"), btn -> {
-            for (HudModule m : modules) m.getConfig().resetToDefault();
-            ConfigManager.save();
-        }).dimensions(width / 2 - 160, height - 28, 110, 20).build());
-    }
-
-    @Override
-    public void render(DrawContext ctx, int mouseX, int mouseY, float delta) {
-        // Dim background
-        renderBackground(ctx, mouseX, mouseY, delta);
-
-        // Title
-        ctx.drawCenteredTextWithShadow(textRenderer, title, width / 2, 6, 0xFFFFFF);
-
-        // Draw all module outlines
-        for (HudModule m : modules) {
-            HudModuleConfig cfg = m.getConfig();
-            int mw = m.getWidth(client);
-            int mh = m.getHeight(client);
-
-            boolean active = cfg.enabled;
-            int borderColor = active ? 0xFF55FF55 : 0xFF555555;
-            int bgColor     = active ? 0x4000AA00 : 0x40222222;
-
-            ctx.fill(cfg.x - 2, cfg.y - 2, cfg.x + mw + 2, cfg.y + mh + 2, bgColor);
-            // Border
-            ctx.fill(cfg.x - 2, cfg.y - 2,         cfg.x + mw + 2, cfg.y - 1,         borderColor);
-            ctx.fill(cfg.x - 2, cfg.y + mh + 1,    cfg.x + mw + 2, cfg.y + mh + 2,    borderColor);
-            ctx.fill(cfg.x - 2, cfg.y - 2,         cfg.x - 1,      cfg.y + mh + 2,    borderColor);
-            ctx.fill(cfg.x + mw + 1, cfg.y - 2,    cfg.x + mw + 2, cfg.y + mh + 2,    borderColor);
-
-            // Module name label
-            ctx.drawText(textRenderer, m.getDisplayName(), cfg.x, cfg.y, active ? 0xFF55FF55 : 0xFF888888, true);
+    private List<HudModule> filtered(){return modules.stream().filter(m->{if(!activeTab.equals("All")&&!tabFor(m).equals(activeTab))return false;return search.isEmpty()||m.getDisplayName().toLowerCase().contains(search);}).collect(Collectors.toList());}
+    private String tabFor(HudModule m){return switch(m.getId()){case "fps","ping","tps","memory","coords","biome","clock","day_counter","player_count","chunk"->"HUD";case "armor_status","potion_effects","compass","toggle_sprint","held_item","target_health"->"Visual";case "cps","keystrokes","speedometer","reach"->"PvP";default->"HUD";};}
+    @Override public void render(DrawContext ctx,int mx,int my,float delta){
+        ctx.fill(0,0,width,height,0xBB000000);
+        ctx.fill(panelX+4,panelY+4,panelX+PW+4,panelY+PH+4,0x44000000);
+        ctx.fill(panelX,panelY,panelX+PW,panelY+PH,CBG);
+        ctx.fill(panelX,panelY,panelX+PW,panelY+HH,CHD);
+        ctx.fill(panelX,panelY,panelX+4,panelY+HH,CAC);
+        ctx.fill(panelX,panelY+HH-1,panelX+PW,panelY+HH,CBR);
+        ctx.drawText(textRenderer,"MOD MENU",panelX+12,panelY+8,CAC,true);
+        ctx.drawText(textRenderer,"Feather HUD  |  Press H to open",panelX+12,panelY+22,CMT,false);
+        int tabY=panelY+HH;
+        ctx.fill(panelX,tabY,panelX+PW,tabY+TH,0xFF111111);
+        ctx.fill(panelX,tabY+TH-1,panelX+PW,tabY+TH,CBR);
+        int tx=panelX+PAD;
+        for(String tab:TABS){int tw=textRenderer.getWidth(tab)+18;boolean sel=tab.equals(activeTab);if(sel){ctx.fill(tx,tabY+3,tx+tw,tabY+TH-1,CTS);ctx.fill(tx,tabY+TH-2,tx+tw,tabY+TH,CAC);}ctx.drawText(textRenderer,tab,tx+9,tabY+10,sel?CTX:CMT,false);tx+=tw+3;}
+        List<HudModule> vis=filtered();
+        ctx.drawText(textRenderer,vis.size()+" modules",panelX+PW-185,tabY+10,CMT,false);
+        int gT=tabY+TH,gB=panelY+PH-FH;
+        ctx.enableScissor(panelX,gT,panelX+PW,gB);
+        int cols=(PW-PAD*2+CG)/(CW+CG),sX=panelX+PAD,sY=gT+PAD-scrollY;
+        for(int i=0;i<vis.size();i++){
+            HudModule m=vis.get(i);int col=i%cols,row=i/cols,cx=sX+col*(CW+CG),cy=sY+row*(CH+CG);
+            if(cy+CH<gT||cy>gB)continue;
+            boolean hov=mx>=cx&&mx<=cx+CW&&my>=cy&&my<=cy+CH,en=m.getConfig().enabled;
+            ctx.fill(cx,cy,cx+CW,cy+CH,hov?CCH:CCD);
+            ctx.fill(cx,cy,cx+CW,cy+3,en?CEN:CDI);
+            ctx.fill(cx,cy,cx+1,cy+CH,CBR);ctx.fill(cx+CW-1,cy,cx+CW,cy+CH,CBR);ctx.fill(cx,cy+CH-1,cx+CW,cy+CH,CBR);
+            String name=m.getDisplayName();while(name.length()>1&&textRenderer.getWidth(name)>CW-22)name=name.substring(0,name.length()-1);
+            ctx.drawText(textRenderer,name,cx+8,cy+10,CTX,true);
+            String cat=tabFor(m);int cpw=textRenderer.getWidth(cat)+8;
+            ctx.fill(cx+8,cy+26,cx+8+cpw,cy+37,0xFF2D2D2D);ctx.drawText(textRenderer,cat,cx+12,cy+28,CMT,false);
+            int bY=cy+CH-22,bW=CW-16;
+            ctx.fill(cx+8,bY,cx+8+bW,bY+14,en?0xFF1B5E20:0xFF1F1F1F);
+            ctx.fill(cx+8,bY,cx+8+bW,bY+1,en?CEN:CDI);
+            String lbl=en?"ENABLED":"DISABLED";int lw=textRenderer.getWidth(lbl);
+            ctx.drawText(textRenderer,lbl,cx+8+(bW-lw)/2,bY+3,en?CEN:CDI,false);
         }
-
-        // Draw popup if visible
-        if (popupModule != null) {
-            drawPopup(ctx, popupModule, popupX, popupY);
-        }
-
-        super.render(ctx, mouseX, mouseY, delta);
-
-        // Tooltip on hover
-        for (HudModule m : modules) {
-            HudModuleConfig cfg = m.getConfig();
-            int mw = m.getWidth(client);
-            int mh = m.getHeight(client);
-            if (mouseX >= cfg.x - 2 && mouseX <= cfg.x + mw + 2 &&
-                mouseY >= cfg.y - 2 && mouseY <= cfg.y + mh + 2) {
-                ctx.drawTooltip(textRenderer,
-                        List.of(Text.literal(m.getDisplayName()),
-                                Text.literal("§7Enabled: " + (cfg.enabled ? "§aYes" : "§cNo")),
-                                Text.literal("§7Pos: " + cfg.x + ", " + cfg.y),
-                                Text.literal("§7Right-click to toggle")),
-                        mouseX, mouseY);
-            }
-        }
+        ctx.disableScissor();
+        int fY=panelY+PH-FH;ctx.fill(panelX,fY,panelX+PW,panelY+PH,CHD);ctx.fill(panelX,fY,panelX+PW,fY+1,CBR);
+        super.render(ctx,mx,my,delta);
     }
-
-    private void drawPopup(DrawContext ctx, HudModule m, int px, int py) {
-        int pw = 120, ph = 60;
-        ctx.fill(px, py, px + pw, py + ph, 0xFF1A1A1A);
-        ctx.fill(px, py, px + pw, py + 1,  0xFF55FF55);
-        ctx.drawText(textRenderer, "§l" + m.getDisplayName(), px + 4, py + 5, 0xFFFFFF, true);
-
-        boolean enabled = m.getConfig().enabled;
-        ctx.drawText(textRenderer, enabled ? "§c● Disable" : "§a● Enable", px + 4, py + 20, 0xFFFFFF, false);
-        ctx.drawText(textRenderer, "§7✦ Reset Position", px + 4, py + 34, 0xFFFFFF, false);
-        ctx.drawText(textRenderer, "§8[ESC to close]", px + 4, py + 48, 0x888888, false);
+    @Override public boolean mouseClicked(double mx,double my,int button){
+        if(super.mouseClicked(mx,my,button))return true;
+        int x=(int)mx,y=(int)my,tabY=panelY+HH,tx=panelX+PAD;
+        for(String tab:TABS){int tw=textRenderer.getWidth(tab)+18;if(x>=tx&&x<=tx+tw&&y>=tabY&&y<=tabY+TH){activeTab=tab;scrollY=0;return true;}tx+=tw+3;}
+        int gT=tabY+TH,cols=(PW-PAD*2+CG)/(CW+CG),sX=panelX+PAD,sY=gT+PAD-scrollY;
+        List<HudModule> vis=filtered();
+        for(int i=0;i<vis.size();i++){HudModule m=vis.get(i);int col=i%cols,row=i/cols,cx=sX+col*(CW+CG),cy=sY+row*(CH+CG);if(x>=cx&&x<=cx+CW&&y>=cy&&y<=cy+CH){m.getConfig().enabled=!m.getConfig().enabled;ConfigManager.save();return true;}}
+        return false;
     }
-
-    // ── Mouse handling ──────────────────────────────────────────────────────
-
-    @Override
-    public boolean mouseClicked(double mx, double my, int button) {
-        int x = (int) mx, y = (int) my;
-
-        // Handle popup click
-        if (popupModule != null) {
-            HudModuleConfig cfg = popupModule.getConfig();
-            // Click on Enable/Disable row (y+20)
-            if (x >= popupX + 4 && x <= popupX + 116 && y >= popupY + 17 && y <= popupY + 31) {
-                cfg.enabled = !cfg.enabled;
-                ConfigManager.save();
-                popupModule = null;
-                return true;
-            }
-            // Click on Reset row (y+34)
-            if (x >= popupX + 4 && x <= popupX + 116 && y >= popupY + 31 && y <= popupY + 45) {
-                cfg.resetToDefault();
-                ConfigManager.save();
-                popupModule = null;
-                return true;
-            }
-            popupModule = null;
-            return true;
-        }
-
-        if (button == 0) { // Left click → start drag
-            for (int i = modules.size() - 1; i >= 0; i--) {
-                HudModule m = modules.get(i);
-                HudModuleConfig cfg = m.getConfig();
-                int mw = m.getWidth(client);
-                int mh = m.getHeight(client);
-                if (x >= cfg.x - 2 && x <= cfg.x + mw + 2 &&
-                    y >= cfg.y - 2 && y <= cfg.y + mh + 2) {
-                    dragging = m;
-                    dragOffsetX = x - cfg.x;
-                    dragOffsetY = y - cfg.y;
-                    return true;
-                }
-            }
-        } else if (button == 1) { // Right click → popup
-            for (int i = modules.size() - 1; i >= 0; i--) {
-                HudModule m = modules.get(i);
-                HudModuleConfig cfg = m.getConfig();
-                int mw = m.getWidth(client);
-                int mh = m.getHeight(client);
-                if (x >= cfg.x - 2 && x <= cfg.x + mw + 2 &&
-                    y >= cfg.y - 2 && y <= cfg.y + mh + 2) {
-                    popupModule = m;
-                    // Keep popup inside screen
-                    popupX = Math.min(x, width - 124);
-                    popupY = Math.min(y, height - 64);
-                    return true;
-                }
-            }
-        }
-
-        return super.mouseClicked(mx, my, button);
-    }
-
-    @Override
-    public boolean mouseDragged(double mx, double my, int button, double dx, double dy) {
-        if (dragging != null && button == 0) {
-            HudModuleConfig cfg = dragging.getConfig();
-            int newX = (int) mx - dragOffsetX;
-            int newY = (int) my - dragOffsetY;
-            // Clamp to screen
-            newX = Math.max(0, Math.min(width  - dragging.getWidth(client),  newX));
-            newY = Math.max(0, Math.min(height - dragging.getHeight(client), newY));
-            cfg.x = newX;
-            cfg.y = newY;
-            return true;
-        }
-        return super.mouseDragged(mx, my, button, dx, dy);
-    }
-
-    @Override
-    public boolean mouseReleased(double mx, double my, int button) {
-        if (dragging != null) {
-            ConfigManager.save();
-            dragging = null;
-            return true;
-        }
-        return super.mouseReleased(mx, my, button);
-    }
-
-    @Override
-    public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
-        if (keyCode == 256) { // ESC
-            if (popupModule != null) { popupModule = null; return true; }
-        }
-        return super.keyPressed(keyCode, scanCode, modifiers);
-    }
-
-    @Override
-    public void close() {
-        ConfigManager.save();
-        client.setScreen(parent);
-    }
-
-    @Override
-    public boolean shouldPause() {
-        return false; // keep rendering the world behind
-    }
+    @Override public boolean mouseScrolled(double mx,double my,double h,double v){scrollY=Math.max(0,scrollY-(int)(v*15));return true;}
+    @Override public void close(){ConfigManager.save();client.setScreen(parent);}
+    @Override public boolean shouldPause(){return false;}
 }
