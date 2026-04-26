@@ -8,8 +8,7 @@ public class BlockAboveModule extends HudModule {
     @Override public void render(DrawContext ctx,MinecraftClient client){
         if(!config.enabled||client.player==null||client.world==null)return;
         BlockPos pos=client.player.getBlockPos().up(2);
-        boolean solid=!client.world.getBlockState(pos).isAir();
-        if(solid){
+        if(!client.world.getBlockState(pos).isAir()){
             String name=client.world.getBlockState(pos).getBlock().getName().getString();
             drawText(ctx,client,"\u25B2 "+name);
         }

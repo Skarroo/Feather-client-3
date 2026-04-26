@@ -8,8 +8,7 @@ public class ItemCounterModule extends HudModule {
     public ItemCounterModule(){super("item_counter","Item Counter",210,98);}
     @Override public void tick(MinecraftClient client){
         if(client.world==null)return;
-        count=0;
-        client.world.getEntities().forEach(e->{if(e instanceof ItemEntity)count++;});
+        count=0;client.world.getEntities().forEach(e->{if(e instanceof ItemEntity)count++;});
     }
     @Override public void render(DrawContext ctx,MinecraftClient client){
         if(!config.enabled||client.player==null)return;
