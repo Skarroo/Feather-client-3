@@ -1,82 +1,30 @@
 package com.featherhud.hud.modules;
-
 import com.featherhud.hud.HudModule;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-
-import java.util.Arrays;
-import java.util.List;
-
+import java.util.*;
 public class ArmorStatusModule extends HudModule {
-
-    // Slot indices: 3=helmet, 2=chestplate, 1=leggings, 0=boots
-    private static final int[] ARMOR_SLOTS = {3, 2, 1, 0};
-    private static final int ICON_SIZE = 16;
-    private static final int GAP = 4;
-    private static final int SLOT_WIDTH = ICON_SIZE + GAP;
-
-    public ArmorStatusModule() {
-        super("armor_status", "Armor Status", 2, 140);
-    }
-
-    @Override
-    public void render(DrawContext ctx, MinecraftClient client) {
-        if (!config.enabled || client.player == null) return;
-
-        List<ItemStack> armorPieces = Arrays.stream(ARMOR_SLOTS)
-                .mapToObj(i -> client.player.getInventory().getArmorStack(i))
-                .toList();
-
-        // Check if player has any armor at all
-        boolean hasArmor = armorPieces.stream().anyMatch(s -> !s.isEmpty());
-        if (!hasArmor) return;
-
-        int startX = config.x;
-        int startY = config.y;
-        int totalWidth = ARMOR_SLOTS.length * SLOT_WIDTH - GAP;
-        int totalHeight = ICON_SIZE + 2 + 3; // icon + gap + durability bar
-
-        if (config.showBackground) {
-            ctx.fill(startX - 2, startY - 2, startX + totalWidth + 2, startY + totalHeight + 2, 0x90000000);
-        }
-
-        for (int i = 0; i < armorPieces.size(); i++) {
-            ItemStack stack = armorPieces.get(i);
-            int x = startX + i * SLOT_WIDTH;
-            int y = startY;
-
-            if (stack.isEmpty()) {
-                // Draw placeholder ghost
-                ctx.fill(x, y, x + ICON_SIZE, y + ICON_SIZE, 0x30FFFFFF);
-                continue;
-            }
-
-            ctx.drawItem(stack, x, y);
-
-            // Draw durability bar below icon
-            if (stack.isDamageable() && stack.isDamaged()) {
-                int maxDmg = stack.getMaxDamage();
-                int dmg = stack.getDamage();
-                float pct = (float)(maxDmg - dmg) / maxDmg;
-                int barW = (int)(ICON_SIZE * pct);
-                int color = durabilityColor(pct);
-
-                int barY = y + ICON_SIZE + 2;
-                ctx.fill(x, barY, x + ICON_SIZE, barY + 2, 0xFF000000);
-                ctx.fill(x, barY, x + barW, barY + 2, 0xFF000000 | color);
+    private static final int[]SLOTS={3,2,1,0};
+    public ArmorStatusModule(){super("armor_status","Armor Status",2,170);}
+    @Override public void render(DrawContext ctx,MinecraftClient client){
+        if(!config.enabled||client.player==null)return;
+        List<ItemStack>ap=Arrays.stream(SLOTS).mapToObj(i->client.player.getInventory().getArmorStack(i)).toList();
+        if(ap.stream().noneMatch(s->!s.isEmpty()))return;
+        int x=config.x,y=config.y,gap=2,sw=18,tw=SLOTS.length*(sw+gap)-gap;
+        if(config.showBackground){ctx.fill(x-2,y-2,x+tw+2,y+sw+8,0xCC111111);}
+        for(int i=0;i<ap.size();i++){
+            ItemStack s=ap.get(i);int ix=x+i*(sw+gap),iy=y;
+            if(s.isEmpty()){ctx.fill(ix,iy,ix+16,iy+16,0x30FFFFFF);continue;}
+            ctx.drawItem(s,ix,iy);
+            if(s.isDamageable()&&s.isDamaged()){
+                float p=(float)(s.getMaxDamage()-s.getDamage())/s.getMaxDamage();
+                int bw=(int)(16*p),c2=durabilityColor(p);
+                ctx.fill(ix,iy+17,ix+16,iy+19,0xFF000000);
+                ctx.fill(ix,iy+17,ix+bw,iy+19,0xFF000000|c2);
             }
         }
     }
-
-    @Override
-    public int getWidth(MinecraftClient client) {
-        return ARMOR_SLOTS.length * SLOT_WIDTH - GAP + 4;
-    }
-
-    @Override
-    public int getHeight(MinecraftClient client) {
-        return ICON_SIZE + 2 + 3 + 4;
-    }
+    @Override public int getWidth(MinecraftClient c){return SLOTS.length*20-2+4;}
+    @Override public int getHeight(MinecraftClient c){return 24;}
 }
