@@ -52,6 +52,10 @@ public class HudRenderer {
         modules.add(new BlockOverlayModule());
         modules.add(new MotionBlurModule());
         modules.add(new CustomCrosshairModule());
+        modules.add(new ShieldStatusModule());
+        modules.add(new JumpResetModule());
+        modules.add(new FreeLookModule());
+        modules.add(new PerspectiveModule());
     }
     public void render(DrawContext context, RenderTickCounter tickCounter) {
         MinecraftClient client = MinecraftClient.getInstance();
