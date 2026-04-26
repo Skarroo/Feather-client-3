@@ -49,6 +49,9 @@ public class HudRenderer {
         modules.add(new FOVChangerModule());
         modules.add(new ItemCounterModule());
         modules.add(new BlockAboveModule());
+        modules.add(new BlockOverlayModule());
+        modules.add(new MotionBlurModule());
+        modules.add(new CustomCrosshairModule());
     }
     public void render(DrawContext context, RenderTickCounter tickCounter) {
         MinecraftClient client = MinecraftClient.getInstance();
