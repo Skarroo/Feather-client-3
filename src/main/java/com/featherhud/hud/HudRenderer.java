@@ -56,6 +56,12 @@ public class HudRenderer {
         modules.add(new JumpResetModule());
         modules.add(new FreeLookModule());
         modules.add(new PerspectiveModule());
+        modules.add(new ScoreboardModule());
+        modules.add(new PackDisplayModule());
+        modules.add(new ClearWaterModule());
+        modules.add(new GlintModule());
+        modules.add(new NickHiderModule());
+        modules.add(new TimerModule());
     }
     public void render(DrawContext context, RenderTickCounter tickCounter) {
         MinecraftClient client = MinecraftClient.getInstance();
